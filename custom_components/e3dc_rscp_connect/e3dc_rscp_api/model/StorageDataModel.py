@@ -56,6 +56,10 @@ class StorageDataModel:
 
     powers: EmsPowerModel = field(default_factory=EmsPowerModel)
 
+    grid_voltages: dict[str, float | None] = field(
+        default_factory=lambda: {"l1": None, "l2": None, "l3": None}
+    )
+
     # power data
     bat_soc: int | None = None
 

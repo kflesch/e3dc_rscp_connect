@@ -51,6 +51,7 @@ The test badge refers to the upstream repository.
 - Live readings for the main storage system:
   - State of charge, battery power, battery state
   - PV production, grid import/export, house consumption
+  - Grid voltage L1, L2 and L3 from the root power meter (index 0, `PM_TYPE_ROOT`)
   - Energy counters (daily / total)
   - Emergency power status
   - Device state and firmware update state
@@ -63,6 +64,11 @@ The test badge refers to the upstream repository.
 - UI-based configuration (no YAML required) with an options flow to update credentials and polling interval after setup.
 
 ## Requirements
+
+Grid voltage sensors read the smart meter at the grid connection, not the PV
+inverter. They remain unknown if the meter does not support voltage readings,
+returns an error, or reports zero/missing values. No grid-frequency reading is
+exposed for this meter by the supported RSCP tags.
 
 - Home Assistant **2025.10.0** or newer
 - An E3/DC S10 system reachable on your local network

@@ -1,6 +1,7 @@
 "This file contains StorageRscpModel. A class to communicate with a E3DC storage system."
 
 import logging
+import math
 
 from rscp_lib.RscpValue import RscpValue
 from .RscpModelInterface import RscpModelInterface
@@ -120,7 +121,21 @@ class StorageRscpModel(RscpModelInterface):
         """
         tags = []
 
+        # A poll may succeed for EMS while the meter response is entirely absent.
+        self.__model.grid_voltages = {"l1": None, "l2": None, "l3": None}
         tags.extend(self.__create_rscp_tags_for_ems())
+        tags.append(
+            RscpValue.construct_rscp_value(
+                "TAG_PM_REQ_DATA",
+                [
+                    ("TAG_PM_INDEX", 0),
+                    ("TAG_PM_REQ_TYPE", None),
+                    ("TAG_PM_REQ_VOLTAGE_L1", None),
+                    ("TAG_PM_REQ_VOLTAGE_L2", None),
+                    ("TAG_PM_REQ_VOLTAGE_L3", None),
+                ],
+            )
+        )
         if not self.__pvi_identified:
             tags.extend(self.__get_ident_tags_for_pvi())
             self.__pvi_identified = True
@@ -152,7 +167,37 @@ class StorageRscpModel(RscpModelInterface):
             return self.__hanlde_rscp_tags_for_pvi(container)
         if container.getTagName() == "TAG_BAT_DATA":
             return self.__handle_rscp_tags_for_battery(container)
+        if container.getTagName() in ("TAG_PM_DATA", "TAG_PM_REQ_DATA"):
+            return self.__handle_rscp_tags_for_grid_meter(container)
         return False
+
+    def __handle_rscp_tags_for_grid_meter(self, container: RscpValue) -> bool:
+        index = container.get_child("TAG_PM_INDEX")
+        if index is not None and index.getValue() != 0:
+            return False
+
+        # Clear missing/error readings so old voltages cannot be sent as current data.
+        self.__model.grid_voltages = {"l1": None, "l2": None, "l3": None}
+        meter_type = container.get_child("TAG_PM_TYPE")
+        if (
+            getattr(container, "isError", False)
+            or index is None
+            or getattr(index, "isError", False)
+            or meter_type is None
+            or getattr(meter_type, "isError", False)
+            or meter_type.getValue() != 1  # PM_TYPE_ROOT identifies the grid connection.
+        ):
+            return True
+
+        for phase in self.__model.grid_voltages:
+            tag = container.get_child(f"TAG_PM_VOLTAGE_{phase.upper()}")
+            if tag is None or getattr(tag, "isError", False):
+                continue
+            value = tag.getValue()
+            if isinstance(value, (int, float)) and math.isfinite(value) and value > 0:
+                self.__model.grid_voltages[phase] = float(value)
+        return True
+
 
     def __create_rscp_tags_for_ems(self):
         requests = []

@@ -17,6 +17,7 @@ from .entities import (
     PowerSensor,
     SGReadySensor,
     StateOfChargeSensor,
+    VoltageSensor,
     WallboxDailyEnergySensor,
     WallboxEnergySensor,
     WallboxPowerSensor,
@@ -81,6 +82,9 @@ async def async_setup_entry(
             "grid_power",
             data_getter=lambda: coordinator.storage.powers.grid,
         ),
+        VoltageSensor(coordinator, config_entry, "l1"),
+        VoltageSensor(coordinator, config_entry, "l2"),
+        VoltageSensor(coordinator, config_entry, "l3"),
         EnergySensor(
             coordinator,
             config_entry,
