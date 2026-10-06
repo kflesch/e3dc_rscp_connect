@@ -1,13 +1,16 @@
 """e3dc_rscp_connect is a home assistant integration to provide data connector to E3DC storage systems."""
 
 import logging
+import aiohttp
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
 from . import const
 from .coordinator import E3dcRscpCoordinator
+from .forecast import ForecastCoordinator, PortalClient
 from .e3dc_rscp_api import (
     E3dcAuthenticationError,
     E3dcIdentificationError,
@@ -43,6 +46,33 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         "coordinator": coordinator,
     }
 
+    current = entry.options or entry.data
+    if current.get(const.CONF_FORECAST_ENABLED) is True:
+        session = async_create_clientsession(
+            hass, auto_cleanup=False, cookie_jar=aiohttp.CookieJar()
+        )
+        try:
+            client = PortalClient(
+                session,
+                current[const.CONF_PORTAL_USERNAME],
+                current[const.CONF_PORTAL_PASSWORD],
+                coordinator.storage.serial,
+            )
+            forecast = ForecastCoordinator(hass, client, entry)
+        except Exception:
+            session.detach()
+            raise
+        hass.data[DOMAIN][entry.entry_id].update(
+            forecast=forecast, forecast_session=session
+        )
+        # Slow cloud requests must not delay local platforms or HA startup.
+        entry.async_create_background_task(
+            hass,
+            forecast.async_refresh(),
+            name="E3/DC initial PV forecast",
+            eager_start=False,
+        )
+
     hass.async_create_task(
         hass.config_entries.async_forward_entry_setups(
             entry, ["sensor", "select", "number", "switch"]
@@ -72,5 +102,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry, ["sensor", "select", "number", "switch"]
     )
     if unload_ok:
+        if session := data.get("forecast_session"):
+            session.detach()
         hass.data[DOMAIN].pop(entry.entry_id)
     return unload_ok

@@ -24,6 +24,7 @@ from .entities import (
     WallboxSessionEnergySensor,
 )
 from .e3dc_rscp_api import DeviceState
+from .entities.forecast_sensor import ForecastSensor
 
 DOMAIN = const.DOMAIN
 _LOGGER = logging.getLogger(__name__)
@@ -308,4 +309,10 @@ async def async_setup_entry(
         ],
     ]
 
+    forecast = hass.data[DOMAIN][config_entry.entry_id].get("forecast")
+    if forecast is not None:
+        sensors.extend(
+            ForecastSensor(forecast, config_entry, coordinator.storage.serial, offset)
+            for offset in (0, 1)
+        )
     async_add_entities(sensors)

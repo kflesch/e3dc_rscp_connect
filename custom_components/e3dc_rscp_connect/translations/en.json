@@ -50,7 +50,7 @@
     "step": {
       "init": {
         "title": "E3/DC configuration",
-        "description": "Choose the login method and enter your E3/DC credentials. A local login always uses the fixed user local.user, so the username can stay empty.",
+        "description": "Choose the login method and enter your E3/DC credentials. A local login always uses the fixed user local.user, so the username can stay empty. Optionally enable the PV forecast with separate portal credentials. The portal password is not the local device password. Leave the portal password empty to keep the stored password.",
         "data": {
           "login_type": "Login method",
           "host": "IP address",
@@ -58,14 +58,20 @@
           "username": "Username (portal login only)",
           "password": "Password",
           "key": "RSCP encryption key",
-          "update_interval": "Update interval (seconds)"
+          "update_interval": "Update interval (seconds)",
+          "forecast_enabled": "Enable portal PV forecast",
+          "portal_username": "Portal username for forecast",
+          "portal_password": "Portal password for forecast"
         }
       }
     },
     "error": {
       "cannot_connect": "Failed to connect",
       "invalid_auth": "Invalid authentication",
-      "username_required": "A portal login needs a username"
+      "username_required": "A portal login needs a username",
+      "portal_credentials_required": "Portal username and password are required",
+      "portal_invalid_auth": "Portal login failed or requires additional confirmation",
+      "portal_cannot_connect": "Cannot connect to the E3/DC portal"
     }
   },
   "selector": {
@@ -206,6 +212,12 @@
           "updating": "Updating",
           "not_updating": "Not updating"
         }
+      },
+      "pv_forecast_today": {
+        "name": "PV forecast today"
+      },
+      "pv_forecast_tomorrow": {
+        "name": "PV forecast tomorrow"
       }
     },
     "select": {

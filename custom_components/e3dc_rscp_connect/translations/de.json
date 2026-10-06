@@ -50,7 +50,7 @@
     "step": {
       "init": {
         "title": "E3/DC Konfiguration",
-        "description": "Wähle die Anmeldeart und gib deine E3/DC Zugangsdaten ein. Die lokale Anmeldung nutzt immer den festen Benutzer local.user, der Benutzername kann dann leer bleiben.",
+        "description": "Wähle die Anmeldeart und gib deine Zugangsdaten ein. Die lokale Anmeldung nutzt immer den festen Benutzer local.user, der Benutzername kann dann leer bleiben. Die PV-Prognose nutzt optional die separate Portal-Anmeldung. Das Portal-Passwort ist nicht das lokale Geräte-Passwort. Ein leeres Portal-Passwort behält das gespeicherte Passwort bei.",
         "data": {
           "login_type": "Anmeldeart",
           "host": "IP-Adresse",
@@ -58,14 +58,20 @@
           "username": "Benutzername (nur Portalanmeldung)",
           "password": "Passwort",
           "key": "RSCP Verschlüsselungsschlüssel",
-          "update_interval": "Aktualisierungsintervall (Sekunden)"
+          "update_interval": "Aktualisierungsintervall (Sekunden)",
+          "forecast_enabled": "PV-Prognose aus dem Portal aktivieren",
+          "portal_username": "Portal-Benutzername für Prognose",
+          "portal_password": "Portal-Passwort für Prognose"
         }
       }
     },
     "error": {
       "cannot_connect": "Verbindung fehlgeschlagen",
       "invalid_auth": "Ungültige Zugangsdaten",
-      "username_required": "Für die Portalanmeldung wird ein Benutzername benötigt"
+      "username_required": "Für die Portalanmeldung wird ein Benutzername benötigt",
+      "portal_credentials_required": "Portal-Benutzername und Portal-Passwort erforderlich",
+      "portal_invalid_auth": "Portal-Anmeldung fehlgeschlagen oder weitere Bestätigung nötig",
+      "portal_cannot_connect": "E3/DC-Portal nicht erreichbar"
     }
   },
   "selector": {
@@ -206,6 +212,12 @@
           "updating": "Update läuft",
           "not_updating": "Kein Update"
         }
+      },
+      "pv_forecast_today": {
+        "name": "PV-Prognose heute"
+      },
+      "pv_forecast_tomorrow": {
+        "name": "PV-Prognose morgen"
       }
     },
     "select": {

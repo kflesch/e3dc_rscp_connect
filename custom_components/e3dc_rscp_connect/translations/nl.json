@@ -50,7 +50,7 @@
     "step": {
       "init": {
         "title": "E3/DC-configuratie",
-        "description": "Kies de aanmeldmethode en voer je E3/DC-gegevens in. Een lokale aanmelding gebruikt altijd de vaste gebruiker local.user, de gebruikersnaam mag dan leeg blijven.",
+        "description": "Kies de aanmeldmethode en voer je E3/DC-gegevens in. Een lokale aanmelding gebruikt altijd de vaste gebruiker local.user, de gebruikersnaam mag dan leeg blijven. U kunt ook de PV-prognose van het portaal inschakelen met uw afzonderlijke my.e3dc.com-inloggegevens. Laat het portaalwachtwoord leeg om het opgeslagen wachtwoord te behouden.",
         "data": {
           "login_type": "Aanmeldmethode",
           "host": "IP-adres",
@@ -58,14 +58,20 @@
           "username": "Gebruikersnaam (alleen portaalaanmelding)",
           "password": "Wachtwoord",
           "key": "RSCP-versleutelingssleutel",
-          "update_interval": "Vernieuwingsinterval (seconden)"
+          "update_interval": "Vernieuwingsinterval (seconden)",
+          "forecast_enabled": "PV-prognose van het portaal inschakelen",
+          "portal_username": "Gebruikersnaam voor het portaal",
+          "portal_password": "Wachtwoord voor het portaal"
         }
       }
     },
     "error": {
       "cannot_connect": "Verbinden mislukt",
       "invalid_auth": "Ongeldige aanmeldgegevens",
-      "username_required": "Een portaalaanmelding heeft een gebruikersnaam nodig"
+      "username_required": "Een portaalaanmelding heeft een gebruikersnaam nodig",
+      "portal_credentials_required": "Vul de gebruikersnaam en het wachtwoord voor het portaal in.",
+      "portal_invalid_auth": "Aanmelden bij het portaal mislukt. Controleer uw inloggegevens of een vereiste extra bevestiging.",
+      "portal_cannot_connect": "Kan geen verbinding maken met het portaal."
     }
   },
   "selector": {
@@ -206,6 +212,12 @@
           "updating": "Update bezig",
           "not_updating": "Geen update"
         }
+      },
+      "pv_forecast_today": {
+        "name": "PV-prognose vandaag"
+      },
+      "pv_forecast_tomorrow": {
+        "name": "PV-prognose morgen"
       }
     },
     "select": {

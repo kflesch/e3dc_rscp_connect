@@ -9,6 +9,9 @@ CONF_PASSWORD = "password"
 CONF_KEY = "key"
 CONF_UPDATE_INTERVAL = "update_interval"
 CONF_LOGIN_TYPE = "login_type"
+CONF_FORECAST_ENABLED = "forecast_enabled"
+CONF_PORTAL_USERNAME = "portal_username"
+CONF_PORTAL_PASSWORD = "portal_password"
 
 DEFAULT_PORT = 5033
 DEFAULT_UPDATE_INTERVAL = 10

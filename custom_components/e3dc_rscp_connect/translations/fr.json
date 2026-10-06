@@ -50,7 +50,7 @@
     "step": {
       "init": {
         "title": "Configuration E3/DC",
-        "description": "Choisissez la méthode de connexion et saisissez vos identifiants E3/DC. Une connexion locale utilise toujours l'utilisateur fixe local.user, le nom d'utilisateur peut donc rester vide.",
+        "description": "Choisissez la méthode de connexion et saisissez vos identifiants E3/DC. Une connexion locale utilise toujours l'utilisateur fixe local.user, le nom d'utilisateur peut donc rester vide. Vous pouvez également activer la prévision photovoltaïque du portail avec vos identifiants my.e3dc.com distincts. Laissez le mot de passe du portail vide pour conserver celui qui est enregistré.",
         "data": {
           "login_type": "Méthode de connexion",
           "host": "Adresse IP",
@@ -58,14 +58,20 @@
           "username": "Nom d'utilisateur (connexion portail uniquement)",
           "password": "Mot de passe",
           "key": "Clé de chiffrement RSCP",
-          "update_interval": "Intervalle de mise à jour (secondes)"
+          "update_interval": "Intervalle de mise à jour (secondes)",
+          "forecast_enabled": "Activer la prévision photovoltaïque du portail",
+          "portal_username": "Nom d’utilisateur du portail",
+          "portal_password": "Mot de passe du portail"
         }
       }
     },
     "error": {
       "cannot_connect": "Échec de la connexion",
       "invalid_auth": "Authentification invalide",
-      "username_required": "Une connexion portail nécessite un nom d'utilisateur"
+      "username_required": "Une connexion portail nécessite un nom d'utilisateur",
+      "portal_credentials_required": "Saisissez le nom d’utilisateur et le mot de passe du portail.",
+      "portal_invalid_auth": "Échec de la connexion au portail. Vérifiez vos identifiants ou toute confirmation supplémentaire requise.",
+      "portal_cannot_connect": "Connexion au portail impossible."
     }
   },
   "selector": {
@@ -206,6 +212,12 @@
           "updating": "Mise à jour en cours",
           "not_updating": "Pas de mise à jour"
         }
+      },
+      "pv_forecast_today": {
+        "name": "Prévision photovoltaïque aujourd’hui"
+      },
+      "pv_forecast_tomorrow": {
+        "name": "Prévision photovoltaïque demain"
       }
     },
     "select": {

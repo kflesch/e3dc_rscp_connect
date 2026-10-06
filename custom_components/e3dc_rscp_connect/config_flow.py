@@ -9,11 +9,17 @@ import voluptuous as vol
 from defusedxml import ElementTree
 from homeassistant import config_entries
 from homeassistant.core import callback
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.aiohttp_client import (
+    async_create_clientsession,
+    async_get_clientsession,
+)
 from homeassistant.helpers.selector import (
     SelectSelector,
     SelectSelectorConfig,
     SelectSelectorMode,
+    TextSelector,
+    TextSelectorConfig,
+    TextSelectorType,
 )
 from homeassistant.helpers.service_info.ssdp import (
     ATTR_UPNP_FRIENDLY_NAME,
@@ -24,10 +30,13 @@ from homeassistant.helpers.service_info.ssdp import (
 
 from .const import (
     CONF_HOST,
+    CONF_FORECAST_ENABLED,
     CONF_KEY,
     CONF_LOGIN_TYPE,
     CONF_PASSWORD,
     CONF_PORT,
+    CONF_PORTAL_USERNAME,
+    CONF_PORTAL_PASSWORD,
     CONF_UPDATE_INTERVAL,
     CONF_USERNAME,
     DEFAULT_PORT,
@@ -38,8 +47,37 @@ from .const import (
     LOGIN_TYPE_PORTAL,
     RSCP_SERVICE_NAME,
 )
+from .forecast import PortalAuthError, PortalClient, PortalError
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def portal_schema(defaults: dict) -> vol.Schema:
+    return vol.Schema(
+        {
+            vol.Required(
+                CONF_FORECAST_ENABLED,
+                default=defaults.get(CONF_FORECAST_ENABLED, False),
+            ): bool,
+            vol.Optional(
+                CONF_PORTAL_USERNAME, default=defaults.get(CONF_PORTAL_USERNAME, "")
+            ): str,
+            vol.Optional(CONF_PORTAL_PASSWORD, default=""): TextSelector(
+                TextSelectorConfig(type=TextSelectorType.PASSWORD)
+            ),
+        }
+    )
+
+
+def portal_errors(values: dict) -> dict[str, str]:
+    if not values.get(CONF_FORECAST_ENABLED):
+        return {}
+    return {
+        key: "portal_credentials_required"
+        for key in (CONF_PORTAL_USERNAME, CONF_PORTAL_PASSWORD)
+        if not (values.get(key) or "").strip()
+    }
+
 
 # The device description is a small XML document, no need to wait long for it.
 DESCRIPTION_TIMEOUT = 10
@@ -346,9 +384,33 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            errors = credentials_errors(user_input)
+            current = dict(self.config_entry.options or self.config_entry.data)
+            values = {**current, **user_input}
+            if not user_input.get(CONF_PORTAL_PASSWORD):
+                values[CONF_PORTAL_PASSWORD] = current.get(CONF_PORTAL_PASSWORD, "")
+            values[CONF_PORTAL_USERNAME] = (
+                values.get(CONF_PORTAL_USERNAME) or ""
+            ).strip()
+            errors = {**credentials_errors(user_input), **portal_errors(values)}
+            if not errors and values.get(CONF_FORECAST_ENABLED):
+                session = async_create_clientsession(
+                    self.hass, auto_cleanup=False, cookie_jar=aiohttp.CookieJar()
+                )
+                try:
+                    await PortalClient(
+                        session,
+                        values[CONF_PORTAL_USERNAME],
+                        values[CONF_PORTAL_PASSWORD],
+                        "0",
+                    ).async_login()
+                except PortalAuthError:
+                    errors["base"] = "portal_invalid_auth"
+                except PortalError:
+                    errors["base"] = "portal_cannot_connect"
+                finally:
+                    session.detach()
             if not errors:
-                return self.async_create_entry(title="", data=entry_data(user_input))
+                return self.async_create_entry(title="", data=entry_data(values))
 
         return self.async_show_form(
             step_id="init",
@@ -357,7 +419,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 include_port=True,
                 include_update_interval=True,
                 defaults=user_input or self._current_values(),
-            ),
+            ).extend(portal_schema(user_input or self._current_values()).schema),
             errors=errors,
         )
 

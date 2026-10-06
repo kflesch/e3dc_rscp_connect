@@ -62,6 +62,32 @@ The test badge refers to the upstream repository.
 - SG-Ready heat pump signal
 - Sun mode / battery remote control
 - UI-based configuration (no YAML required) with an options flow to update credentials and polling interval after setup.
+- Optional portal PV forecasts for today and tomorrow, including hourly estimates.
+
+### Optional PV forecast
+
+After setting up the local connection, open the integration's options and enable
+**Enable portal PV forecast**. Enter your separate **my.e3dc.com** portal username
+and password. These credentials are independent of the local RSCP login; leave
+the portal password field empty when editing options to keep its stored value.
+
+Two sensors provide estimated daily production in kWh. Their `hourly` attribute
+contains timestamps with the configured Home Assistant time zone, `power_w` and
+`energy_kwh`. `last_update` records the successful fetch; `stale` indicates that
+the most recent fetch failed. Missing or incomplete days are unavailable, not
+zero. Forecasts are estimates and do not have a total-increasing state class.
+
+The forecast is fetched every hour through the portal's customer SAML login.
+Access and renewal tokens stay in memory and are renewed automatically; no
+browser session or copied token is required. Portal outages do not interrupt
+local RSCP measurements. The last successful forecast remains available while
+its day is still present in the cached series. The sensors switch days at local
+midnight, including daylight saving time transitions.
+
+This optional feature requires Internet access. It uses the portal interface,
+which may change independently of this integration. Interactive login steps such
+as MFA require attention and are not bypassed. Disable the forecast in options
+to return to local-only operation.
 
 ## Requirements
 
