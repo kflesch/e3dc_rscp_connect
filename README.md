@@ -2,9 +2,47 @@
 
 # E3DC RSCP Connect
 
-<a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=tobias-terhaar&repository=e3dc_rscp_connect"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open in HACS" /></a>
-
 A [Home Assistant](https://www.home-assistant.io/) custom integration for **E3/DC** energy storage systems (S10 battery storage). It communicates directly with the device on your local network using the proprietary **RSCP** (Remote Storage Control  Protocol), giving you access to your battery storage, connected wallboxes and power meters — without going through the E3/DC cloud.
+
+## Purpose of this fork and branch selection
+
+This fork develops additions to supply E3/DC measurements and PV forecasts to
+[Ortsnetzauslastung](https://www.ortsnetz-auslastung.de/) through the separate
+[Home Assistant Ortsnetzauslastung integration](https://github.com/thomaslehmann1234/ha_ortsnetz_auslastung).
+E3DC RSCP Connect exposes Home Assistant entities; configure their use and
+transmission in the Ortsnetzauslastung integration separately.
+
+**`main` is the clean fork without feature additions:** it follows upstream
+functionality and contains neither the additional smartmeter sensors nor the
+portal forecast. Its adjustments are the fork documentation and a dependency
+compatibility fix (`defusedxml>=0.7.1`) required by Home Assistant's validator.
+It runs with local RSCP measurements and does not need a PV forecast.
+
+Choose the branch according to the features you need:
+
+| Branch to install | Local RSCP measurements | Additional grid voltage L1/L2/L3 sensors | Optional portal PV forecast |
+| --- | --- | --- | --- |
+| [`main`](https://github.com/kflesch/e3dc_rscp_connect/tree/main) | Yes | No | No |
+| [`smartmeter-phasenspannungen`](https://github.com/kflesch/e3dc_rscp_connect/tree/smartmeter-phasenspannungen) | Yes | Yes | No |
+| [`pv-prognose`](https://github.com/kflesch/e3dc_rscp_connect/tree/pv-prognose) | Yes | Yes | Yes |
+
+The smartmeter branch adds voltages from the main grid meter for use by
+Ortsnetzauslastung. The forecast branch builds on that branch and includes all
+three voltage sensors plus production estimates for today and tomorrow, with
+hourly values. For Ortsnetzauslastung with E3/DC measurements and the E3/DC portal
+forecast, install `pv-prognose`.
+
+The portal forecast is optional and uses separately configured credentials.
+Select today's forecast sensor as the PV forecast source in the
+Ortsnetzauslastung integration when enabling it. The voltage sensors remain
+available when the forecast is disabled.
+
+Each branch is a complete installation of the same Home Assistant integration.
+Install only one branch; do not mix files from different branches.
+
+The detailed feature list below describes the branch whose README you are reading.
+This fork is installed manually and will not be submitted for inclusion in HACS.
+The test badge refers to the upstream repository.
 
 ## Features
 
@@ -33,20 +71,16 @@ A [Home Assistant](https://www.home-assistant.io/) custom integration for **E3/D
 
 ## Installation
 
-### Via HACS (recommended)
+### Install a branch from this fork manually
 
-Since June 2026 E3DC RSCP Connect has been integrated into the default store of HACS.
+1. Choose a branch from the table above and open its GitHub link.
+2. Use **Code → Download ZIP** on that branch, then extract the archive.
+3. Back up any existing `config/custom_components/e3dc_rscp_connect/` directory.
+4. Replace that directory with the complete `custom_components/e3dc_rscp_connect/`
+   folder from the chosen archive. Do not mix files from different branches.
+5. Restart Home Assistant.
 
-One-Click Installation: <a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=tobias-terhaar&repository=e3dc_rscp_connect"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open in HACS" /></a>
-
-1. In Home Assistant open **HACS → Integrations**.
-2. Search for **E3DC RSCP Connect**
-3. Install **E3DC RSCP connect** and restart Home Assistant.
-
-### Manual
-
-1. Copy the `custom_components/e3dc_rscp_connect` folder into your Home Assistant `config/custom_components/` directory.
-2. Restart Home Assistant.
+The branch selected when downloading determines which additions are installed.
 
 ## Configuration
 
@@ -79,7 +113,7 @@ All device communication lives in `e3dc_rscp_api`, a self-contained package with
 imports that is meant to become a standalone library. The integration above it never sees an RSCP
 tag, frame or connection — it only reads the plain dataclasses the api returns.
 
-This has been introduced to be prepared for a potential switch from a HACS integration to a core integration.
+This architecture is inherited from upstream.
 
 ```
 Home Assistant Config Entry
